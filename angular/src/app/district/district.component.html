@@ -1,0 +1,207 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col col-md-6">
+        <h5 class="card-title">
+          {{ 'Districts' | abpLocalization }}
+        </h5>
+      </div>
+      <div class="text-end col col-md-6 d-flex justify-content-end">
+        <div class="text-lg-end pt-2">
+          <button nz-button type="button" (click)="createDistrict()">
+            <i class="fa fa-plus me-1"></i>
+            <span>{{ '::New District' | abpLocalization }}</span>
+          </button>
+        </div>
+        <div class="text-lg-end pt-2">
+          <button nz-button type="button" (click)="openUploadModal()">
+            <span nz-icon nzType="upload"></span>
+            Import From Excel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <nz-table
+      #provinceTable
+      [nzData]="district.items"
+      [nzPageSize]="pageSize"
+      [nzTotal]="district.totalCount"
+      [nzScroll]="{ x: '100%', y: '400px' }"
+      nzShowPagination="false"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="100px">{{ '::Code' | abpLocalization }}</th>
+          <th>{{ '::Name' | abpLocalization }}</th>
+          <th>{{ '::Name-En' | abpLocalization }}</th>
+          <th>{{ '::Level' | abpLocalization }}</th>
+          <th nzWidth="200px">{{ '::Actions' | abpLocalization }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of district.items">
+          <td>{{ row.code }}</td>
+          <td>{{ row.districtName }}</td>
+          <td>{{ row.districtEnName }}</td>
+          <td>{{ '::Enum:DistrictLevel.' + row.districtLevel | abpLocalization }}</td>
+          <td>
+            <!-- Edit button -->
+            <button nz-button [nzSize]="small" (click)="editDistrict(row.id)">
+              <i class="fa fa-pencil me-1"></i>
+              {{ '::Edit' | abpLocalization }}
+            </button>
+
+            <!-- Delete button -->
+            <!-- <button nz-button nzDanger [nzSize]="small" (click)="delete(row.id)">
+              <i class="fa fa-trash me-1"></i>
+              {{ '::Delete' | abpLocalization }}
+            </button> -->
+            <button
+              nz-button
+              nzDanger
+              [nzSize]="small"
+              nz-popconfirm
+              nzPopconfirmTitle="Are you sure delete this?"
+              nzPopconfirmPlacement="bottom"
+              (nzOnConfirm)="delete(row.id)"
+              (nzOnCancel)="cancel()"
+            >
+              <i class="fa fa-trash me-1"></i>
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <div class="d-flex justify-content-end mt-2 mr-2">
+      <nz-pagination
+        [nzPageIndex]="currentPage"
+        [nzPageSize]="pageSize"
+        [nzTotal]="district.totalCount"
+        (nzPageIndexChange)="onPageChange($event)"
+        [nzShowSizeChanger]="false"
+        [nzSize]="'small'"
+      ></nz-pagination>
+    </div>
+  </div>
+</div>
+
+<nz-modal
+  [(nzVisible)]="isModalOpen"
+  [nzTitle]="
+    selectedDistrict.id ? ('::Edit' | abpLocalization) : ('::New District' | abpLocalization)
+  "
+  (nzOnCancel)="closeModal()"
+  [nzWidth]="'600px'"
+>
+  <!-- Modal Content -->
+  <div *nzModalContent>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="mt-2">
+        <label for="code">Code</label><span> * </span>
+        <input
+          nz-input
+          type="number"
+          formControlName="code"
+          nzSize="large"
+          placeHolder="Enter code"
+          autofocus
+        />
+      </div>
+
+      <div class="mt-2">
+        <label for="districtName">Name</label><span> * </span>
+        <input nz-input formControlName="districtName" nzSize="large" placeHolder="Enter name" />
+      </div>
+
+      <div class="mt-2">
+        <label for="districtEnName">English Name</label><span> * </span>
+        <input
+          nz-input
+          formControlName="districtEnName"
+          nzSize="large"
+          placeHolder="Enter English name"
+        />
+      </div>
+
+      <div class="mt-2">
+        <label for="districtLevel">Level</label><span> * </span>
+        <nz-select
+          class="d-block"
+          formControlName="districtLevel"
+          nzSize="large"
+          nzPlaceHolder="Select district level"
+        >
+          <nz-option
+            *ngFor="let type of districtLevel"
+            [nzValue]="type.value"
+            [nzLabel]="'::Enum:DistrictLevel.' + type.value | abpLocalization"
+          ></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="mt-2">
+        <label for="provinceCode">Belong to Province</label><span> * </span>
+        <nz-select
+          class="d-block"
+          formControlName="provinceCode"
+          nzPlaceHolder="Select a Province"
+          nzSize="large"
+        >
+          <nz-option
+            *ngFor="let i of provinces"
+            [nzValue]="i.code"
+            [nzLabel]="i.provinceName"
+          ></nz-option>
+        </nz-select>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal Footer -->
+  <div *nzModalFooter>
+    <button nz-button nzType="default" (click)="closeModal()">
+      {{ '::Close' | abpLocalization }}
+    </button>
+    <button nz-button nzType="primary" [disabled]="form.invalid" (click)="save()">
+      <i class="fa fa-check mr-1"></i>
+      {{ '::Save' | abpLocalization }}
+    </button>
+  </div>
+</nz-modal>
+
+<!-- Upload Modal -->
+<nz-modal
+  [(nzVisible)]="isUploadModalOpen"
+  nzTitle="Import From Excel"
+  (nzOnCancel)="closeUploadModal()"
+  [nzWidth]="'600px'"
+>
+  <div *nzModalContent>
+    <nz-upload
+      [nzHeaders]="{ authorization: 'authorization-text' }"
+      [nzAccept]="
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel'
+      "
+      [nzCustomRequest]="customRequest"
+      [nzBeforeUpload]="beforeUpload"
+    >
+      <button nz-button>
+        <span nz-icon nzType="upload"></span>
+        Upload Excel File
+      </button>
+    </nz-upload>
+    <div class="mt-3">
+      <a href="assets/excel_sample/Danh sách cấp huyện.xlsx" download>Download Sample Excel File</a>
+    </div>
+  </div>
+
+  <div *nzModalFooter>
+    <button nz-button nzType="default" (click)="closeUploadModal()">
+      {{ '::Close' | abpLocalization }}
+    </button>
+  </div>
+</nz-modal>

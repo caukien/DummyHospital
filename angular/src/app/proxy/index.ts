@@ -1,0 +1,11 @@
+import * as Area from './area';
+import * as Books from './books';
+import * as CommuneDtos from './commune-dtos';
+import * as DistrictDtos from './district-dtos';
+import * as HospitalDtos from './hospital-dtos';
+import * as Microsoft from './microsoft';
+import * as PantientDtos from './pantient-dtos';
+import * as ProvinceDtos from './province-dtos';
+import * as Service from './service';
+import * as Volo from './volo';
+export { Area, Books, CommuneDtos, DistrictDtos, HospitalDtos, Microsoft, PantientDtos, ProvinceDtos, Service, Volo };

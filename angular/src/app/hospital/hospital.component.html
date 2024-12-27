@@ -1,0 +1,199 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col col-md-6">
+        <h5 class="card-title">
+          {{ 'Hospitals' | abpLocalization }}
+        </h5>
+      </div>
+      <div class="text-end col col-md-6">
+        <div class="text-lg-end pt-2">
+          <button nz-button type="button" (click)="createHospital()">
+            <i class="fa fa-plus me-1"></i>
+            <span>{{ '::New Hospital' | abpLocalization }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <nz-table
+      #provinceTable
+      [nzData]="hospital.items"
+      [nzPageSize]="pageSize"
+      [nzTotal]="hospital.totalCount"
+      [nzScroll]="{ x: '100%', y: '400px' }"
+      nzShowPagination="false"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="100px">{{ '::Code' | abpLocalization }}</th>
+          <th>{{ '::Name' | abpLocalization }}</th>
+          <th>{{ '::Province Code' | abpLocalization }}</th>
+          <th>{{ '::District Code' | abpLocalization }}</th>
+          <th>{{ '::Commune Code' | abpLocalization }}</th>
+          <th>{{ '::Address' | abpLocalization }}</th>
+          <th nzWidth="200px">{{ '::Actions' | abpLocalization }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of hospital.items">
+          <td>{{ row.hospitalCode }}</td>
+          <td>{{ row.hospitalName }}</td>
+          <td>{{ row.provinceCode }}</td>
+          <td>{{ row.districtCode }}</td>
+          <td>{{ row.communeCode }}</td>
+          <td>{{ row.address }}</td>
+
+          <td>
+            <!-- Edit button -->
+            <button nz-button [nzSize]="small" (click)="editHospital(row.id)">
+              <i class="fa fa-pencil me-1"></i>
+              {{ '::Edit' | abpLocalization }}
+            </button>
+
+            <!-- Delete button -->
+            <!-- <button nz-button nzDanger [nzSize]="small" (click)="delete(row.id)">
+                <i class="fa fa-trash me-1"></i>
+                {{ '::Delete' | abpLocalization }}
+              </button> -->
+            <button
+              nz-button
+              nzDanger
+              [nzSize]="small"
+              nz-popconfirm
+              nzPopconfirmTitle="Are you sure delete this?"
+              nzPopconfirmPlacement="bottom"
+              (nzOnConfirm)="delete(row.id)"
+              (nzOnCancel)="cancel()"
+            >
+              <i class="fa fa-trash me-1"></i>
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+    <div class="d-flex justify-content-end mt-2 mr-2">
+      <nz-pagination
+        [nzPageIndex]="currentPage"
+        [nzPageSize]="pageSize"
+        [nzTotal]="hospital.totalCount"
+        (nzPageIndexChange)="onPageChange($event)"
+        [nzShowSizeChanger]="false"
+        [nzSize]="'small'"
+      ></nz-pagination>
+    </div>
+  </div>
+</div>
+
+<nz-modal
+  [(nzVisible)]="isModalOpen"
+  [nzTitle]="
+    selectedHospital.id ? ('::Edit' | abpLocalization) : ('::New Hopital' | abpLocalization)
+  "
+  (nzOnCancel)="closeModal()"
+  [nzWidth]="'600px'"
+>
+  <!-- Modal Content -->
+  <div *nzModalContent>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="mt-2">
+        <label for="hospitalCode">Code</label><span> * </span>
+        <input
+          nz-input
+          type="number"
+          formControlName="hospitalCode"
+          nzSize="large"
+          placeHolder="Enter code"
+          autofocus
+        />
+      </div>
+
+      <div class="mt-2">
+        <label for="hospitalName">Name</label><span> * </span>
+        <input
+          nz-input
+          type="text"
+          formControlName="hospitalName"
+          nzSize="large"
+          placeHolder="Enter name"
+        />
+      </div>
+
+      <div class="mt-2">
+        <label for="provinceCode">Province Code</label><span> * </span>
+        <nz-select
+          class="d-block"
+          formControlName="provinceCode"
+          nzSize="large"
+          nzPlaceHolder="Select a Province"
+          (ngModelChange)="onProvinceChange($event)"
+        >
+          <nz-option
+            *ngFor="let i of provinces"
+            [nzValue]="i.code"
+            [nzLabel]="i.provinceName"
+          ></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="mt-2">
+        <label for="districtCode">District Code</label><span> * </span>
+        <nz-select
+          class="d-block"
+          formControlName="districtCode"
+          nzSize="large"
+          nzPlaceHolder="Select a district"
+          [nzDisabled]="!districts.length"
+          (ngModelChange)="onDistrictChange($event)"
+        >
+          <nz-option
+            *ngFor="let district of districts"
+            [nzValue]="district.code"
+            [nzLabel]="district.districtName"
+          ></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="mt-2">
+        <label for="communeCode">Commune Code</label><span> * </span>
+        <nz-select
+          class="d-block"
+          formControlName="communeCode"
+          nzSize="large"
+          nzPlaceHolder="Select a Commune"
+          [nzDisabled]="!communes.length"
+        >
+          <nz-option
+            *ngFor="let commune of communes"
+            [nzValue]="commune.communeCode"
+            [nzLabel]="commune.communeName"
+          ></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="mt-2">
+        <label for="address">Address</label><span> * </span>
+        <input
+          nz-input
+          type="text"
+          formControlName="address"
+          nzSize="large"
+          placeHolder="Enter address"
+        />
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal Footer -->
+  <div *nzModalFooter>
+    <button nz-button nzType="default" (click)="closeModal()">
+      {{ '::Close' | abpLocalization }}
+    </button>
+    <button nz-button nzType="primary" [disabled]="form.invalid" (click)="save()">
+      <i class="fa fa-check mr-1"></i>
+      {{ '::Save' | abpLocalization }}
+    </button>
+  </div>
+</nz-modal>
