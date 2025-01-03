@@ -16,6 +16,7 @@ using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.ObjectMapping;
 
 
 namespace Dummy1.Service
@@ -159,15 +160,17 @@ namespace Dummy1.Service
         CreateUpdateProvinceDto
         >, IProvinceService
     {
-        private readonly IMapper _mapper;
+        //private readonly IMapper _mapper;
         private readonly IDapperBasicRepo<Province> _dapperBasicRepo;
         private readonly Dummy1DbContext _context;
+        private readonly IObjectMapper _objectMapper;
 
-        public ProvinceService(IRepository<Province, Guid> repository, IMapper mapper, IDapperBasicRepo<Province> dapperBasicRepo, Dummy1DbContext context) : base(repository)
+        public ProvinceService(IRepository<Province, Guid> repository, IDapperBasicRepo<Province> dapperBasicRepo, Dummy1DbContext context, IObjectMapper objectMapper) : base(repository)
         {
-            _mapper = mapper;
+            //_mapper = mapper;
             _dapperBasicRepo = dapperBasicRepo;
             _context = context;
+            _objectMapper = objectMapper;
         }
 
         //public ProvinceService(IRepository<Province, Guid> repository) : base(repository)
@@ -186,7 +189,7 @@ namespace Dummy1.Service
 
             var totalRecord = await _dapperBasicRepo.GetTotalCount();
 
-            var itemsDto = _mapper.Map<List<ProvinceDto>>(items);
+            var itemsDto = _objectMapper.Map<List<Province>, List<ProvinceDto>>(items);
 
             return new PagedResultDto<ProvinceDto>
             {
@@ -205,7 +208,7 @@ namespace Dummy1.Service
 
         public override async Task<ProvinceDto> GetAsync(Guid id)
         {
-            var item = _mapper.Map<ProvinceDto>(await _dapperBasicRepo.GetOne(id));
+            var item = _objectMapper.Map<Province, ProvinceDto>(await _dapperBasicRepo.GetOne(id));
 
             return item;
         }
@@ -264,7 +267,7 @@ namespace Dummy1.Service
                             };
 
                             // Ánh xạ từ CreateUpdateProvinceDto sang Province
-                            var province = _mapper.Map<Province>(provinceDto);
+                            var province = _objectMapper.Map<CreateUpdateProvinceDto, Province>(provinceDto);
 
                             provinceList.Add(province);
                         }
